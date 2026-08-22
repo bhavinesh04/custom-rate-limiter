@@ -1,49 +1,41 @@
+import redisClient from "../config/redis.js";
+import fs from "fs";
 
-export default function createRateLimiter({maxTokens, refillRate }) {
-  // everything goes inside
+const luaScript = fs.readFileSync(
+    new URL("./rateLimiter/rateLimiter.lua", import.meta.url),
+    "utf8"
+);
 
-const requestStore = new Map();
-  const INACTIVITY_LIMIT = 10 * 60 * 1000
+export default function createRateLimiter({ maxTokens, refillRate }) {
 
-  function cleanupInactiveIPs() {
-  const now = Date.now()
+    return async function rateLimiter(req, res, next) {
+        const IP = req.ip;
+        const key = `rate_limit:${IP}`;
 
-  for (const [IP, data] of requestStore){
-if (now - data.lastRefillTime > INACTIVITY_LIMIT) {
-  requestStore.delete(IP)
+        try {
+            const result = await redisClient.eval(luaScript, {
+                keys: [key],
+                arguments: [
+                    maxTokens.toString(),
+                    refillRate.toString(),
+                    Date.now().toString()
+                ]
+            });
 
-}
-}
-}
-setInterval(cleanupInactiveIPs, INACTIVITY_LIMIT)
+            if (result === 1) {
+                return next();
+            }
 
+            return res.status(429).json({
+                message: "Too many requests"
+            });
 
-return function rateLimiter(req, res, next){
-    const IP = req.ip;
-    const currentTime = Date.now();
+        } catch (error) {
+            console.error("Rate limiter error:", error);
 
-    //first req from 1 IP
-    if(!requestStore.has(IP)){
-        requestStore.set(IP,{
-            tokens: maxTokens - 1,
-            lastRefillTime: currentTime,
-        });
-        return next();
-    }
-        const data = requestStore.get(IP);
-        const timePassesd = currentTime- data.lastRefillTime;
-        const tokensToAdd = (timePassesd / 1000) * refillRate
-
-        data.tokens = Math.min(maxTokens, data.tokens + tokensToAdd)
-        data.lastRefillTime = currentTime
-
-        //allow or block 
-    if (data.tokens >= 1) {
-  data.tokens -= 1
- return next()
-
-} else {
-  return res.status(429).json({ message: "Too many requests" })
-}
-}
+            return res.status(503).json({
+                message: "Rate limiter temporarily unavailable"
+            });
+        }
+    };
 }
