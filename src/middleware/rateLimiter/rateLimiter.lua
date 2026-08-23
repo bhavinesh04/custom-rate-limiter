@@ -34,7 +34,7 @@ if tokens >= 1 then
     )
     redis.call("EXPIRE", KEYS[1], 600)
 
-    return 1
+    return {1, math.floor(tokens)}
 end
 
 redis.call(
@@ -47,4 +47,6 @@ redis.call(
 )
 redis.call("EXPIRE", KEYS[1], 600)
 
-return 0
+local retryAfter = math.ceil((1 - tokens) / refillRate)
+
+return {0, math.floor(tokens), retryAfter}

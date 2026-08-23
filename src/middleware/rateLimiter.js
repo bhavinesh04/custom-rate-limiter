@@ -1,16 +1,25 @@
 import redisClient from "../config/redis.js";
 import fs from "fs";
-
+console.log("RATE LIMITER FILE LOADED");
 const luaScript = fs.readFileSync(
     new URL("./rateLimiter/rateLimiter.lua", import.meta.url),
     "utf8"
 );
 
-export default function createRateLimiter({ maxTokens, refillRate }) {
+export default function createRateLimiter({ maxTokens,
+    refillRate,
+    keyGenerator = (req) => req.ip ,identityErrorMessage = "Client identity is required"}) {
 
     return async function rateLimiter(req, res, next) {
-        const IP = req.ip;
-        const key = `rate_limit:${IP}`;
+        const identity = keyGenerator(req);
+
+if (!identity) {
+    return res.status(400).json({
+        message: identityErrorMessage
+    });
+}
+
+const key = `rate_limit:${identity}`;
 
         try {
             const result = await redisClient.eval(luaScript, {
@@ -22,13 +31,23 @@ export default function createRateLimiter({ maxTokens, refillRate }) {
                 ]
             });
 
-            if (result === 1) {
-                return next();
-            }
+            console.log("LUA RESULT:", result);
 
-            return res.status(429).json({
-                message: "Too many requests"
-            });
+   if (result[0] === 1) {
+    res.setHeader("X-RateLimit-Limit", maxTokens);
+    res.setHeader("X-RateLimit-Remaining", result[1]);
+    return next();
+}
+
+    const retryAfter = result[2];
+
+res.setHeader("X-RateLimit-Limit", maxTokens);
+res.setHeader("X-RateLimit-Remaining", result[1]);
+res.setHeader("Retry-After", retryAfter);
+
+return res.status(429).json({
+    message: "Too many requests"
+});
 
         } catch (error) {
             console.error("Rate limiter error:", error);
