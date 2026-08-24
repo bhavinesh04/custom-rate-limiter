@@ -1,6 +1,6 @@
 import redisClient from "../config/redis.js";
 import fs from "fs";
-console.log("RATE LIMITER FILE LOADED");
+// console.log("RATE LIMITER FILE LOADED");
 const luaScript = fs.readFileSync(
     new URL("./rateLimiter/rateLimiter.lua", import.meta.url),
     "utf8"
@@ -33,7 +33,15 @@ const key = `rate_limit:${bucketIdentity}`;
 
         try {
             const result = await redisClient.eval(luaScript, {
-                keys: [key],
+                keys: [
+    key,
+    "metrics:allowed",
+    `metrics:allowed:${req.path}`,
+    `metrics:allowed:client:${identityType}:${identity}`,
+    "metrics:rejected",
+    `metrics:rejected:${req.path}`,
+    `metrics:rejected:client:${identityType}:${identity}`
+],
                 arguments: [
                     maxTokens.toString(),
                     refillRate.toString(),
@@ -41,30 +49,21 @@ const key = `rate_limit:${bucketIdentity}`;
                 ]
             });
 
-            console.log("LUA RESULT:", result);
+            // console.log("LUA RESULT:", result);
 
    if (result[0] === 1) {
-    await redisClient.incr("metrics:allowed");
-await redisClient.incr(`metrics:allowed:${req.path}`);
-await redisClient.incr(
-    `metrics:allowed:client:${identityType}:${identity}`
-);
-    
     res.setHeader("X-RateLimit-Limit", maxTokens);
     res.setHeader("X-RateLimit-Remaining", result[1]);
     return next();
 }
-await redisClient.incr("metrics:rejected");
-await redisClient.incr(`metrics:rejected:${req.path}`);
-await redisClient.incr(
-    `metrics:rejected:client:${identityType}:${identity}`
-);
 
     const retryAfter = result[2];
+    const resetTime = result[3];
 
 res.setHeader("X-RateLimit-Limit", maxTokens);
 res.setHeader("X-RateLimit-Remaining", result[1]);
 res.setHeader("Retry-After", retryAfter);
+res.setHeader("X-RateLimit-Reset", resetTime);
 
 return res.status(429).json({
     message: "Too many requests"
