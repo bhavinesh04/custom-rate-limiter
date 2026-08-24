@@ -3,6 +3,7 @@ import cors from "cors"
 import connectDB from "./config/db.js"
 import app from "./app.js"
 import "./config/redis.js"
+import metricsRouter from "./routes/metrics.js";
 
 
 dotenv.config()
@@ -14,6 +15,8 @@ app.use(cors())
 app.get("/", (req, res) => {
   res.send("🚦 Rate Limiter API running")
 })
+
+app.use("/metrics", metricsRouter);
 
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {

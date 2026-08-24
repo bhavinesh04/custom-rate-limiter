@@ -6,6 +6,7 @@ const apiKeyLimiter = createRateLimiter({
     maxTokens: 3,
     refillRate: 1,
     identityErrorMessage: "API key is required",
+    identityType: "apiKey",
     keyGenerator: (req) => {
         const apiKey = req.headers["x-api-key"];
 
@@ -13,14 +14,16 @@ const apiKeyLimiter = createRateLimiter({
             return null;
         }
 
-        return `apiKey:${apiKey}`;
-    }
+        return apiKey;
+    },
+    bucketKeyGenerator: (identity) => `apiKey:${identity}`
 });
 
 const userLimiter = createRateLimiter({
     maxTokens: 3,
     refillRate: 0.1,
      identityErrorMessage: "User ID is required",
+     identityType: "user",
     keyGenerator: (req) => {
         const userId = req.headers["x-user-id"];
 
@@ -28,14 +31,17 @@ const userLimiter = createRateLimiter({
             return null;
         }
 
-        return `user:${userId}`;
-    }
+        return userId;
+    },
+    bucketKeyGenerator: (identity) => `user:${identity}`
 });
 
 const userLoginLimiter = createRateLimiter({
     maxTokens: 3,
     refillRate: 0.1,
     identityErrorMessage: "User ID is required",
+    identityType: "user",
+    
     keyGenerator: (req) => {
         const userId = req.headers["x-user-id"];
         
@@ -44,8 +50,9 @@ const userLoginLimiter = createRateLimiter({
             return null;
         }
 
-        return `user:${userId}:login`;
-    }
+        return userId;
+    },
+    bucketKeyGenerator: (identity) => `user:${identity}:login`
 });
 
 export { loginLimiter, apiLimiter, apiKeyLimiter,userLimiter,userLoginLimiter };

@@ -8,10 +8,14 @@ const luaScript = fs.readFileSync(
 
 export default function createRateLimiter({ maxTokens,
     refillRate,
-    keyGenerator = (req) => req.ip ,identityErrorMessage = "Client identity is required"}) {
+    keyGenerator = (req) => req.ip ,
+    bucketKeyGenerator = (identity) => identity,
+    identityErrorMessage = "Client identity is required",
+  identityType = "ip"}) {
 
     return async function rateLimiter(req, res, next) {
         const identity = keyGenerator(req);
+        const bucketIdentity = bucketKeyGenerator(identity);
 
 if (!identity) {
     return res.status(400).json({
@@ -19,7 +23,7 @@ if (!identity) {
     });
 }
 
-const key = `rate_limit:${identity}`;
+const key = `rate_limit:${bucketIdentity}`;
 
         try {
             const result = await redisClient.eval(luaScript, {
@@ -34,10 +38,21 @@ const key = `rate_limit:${identity}`;
             console.log("LUA RESULT:", result);
 
    if (result[0] === 1) {
+    await redisClient.incr("metrics:allowed");
+await redisClient.incr(`metrics:allowed:${req.path}`);
+await redisClient.incr(
+    `metrics:allowed:client:${identityType}:${identity}`
+);
+    
     res.setHeader("X-RateLimit-Limit", maxTokens);
     res.setHeader("X-RateLimit-Remaining", result[1]);
     return next();
 }
+await redisClient.incr("metrics:rejected");
+await redisClient.incr(`metrics:rejected:${req.path}`);
+await redisClient.incr(
+    `metrics:rejected:client:${identityType}:${identity}`
+);
 
     const retryAfter = result[2];
 
