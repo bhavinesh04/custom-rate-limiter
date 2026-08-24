@@ -34,8 +34,6 @@ router.get("/", async (req, res) => {
 const rejectedClientKeys = await getMetricKeys(
     "metrics:rejected:client:*"
 );
-
-
         const endpoints = {};
         const clients = {};
 
@@ -55,11 +53,15 @@ for (const key of rejectedKeys) {
 
     if (!endpoints[endpoint]) {
         endpoints[endpoint] = {
-            allowed: 0
+            allowed: 0,
+            rejected: 0
         };
     }
 
-    for (const key of allowedClientKeys) {
+    endpoints[endpoint].rejected = Number(value || 0);
+}
+
+for (const key of allowedClientKeys) {
     const client = key.replace("metrics:allowed:client:", "");
     const value = await redisClient.get(key);
 
@@ -83,8 +85,6 @@ for (const key of rejectedClientKeys) {
     clients[client].rejected = Number(value || 0);
 }
 
-    endpoints[endpoint].rejected = Number(value || 0);
-}
 
 const allowedCount = Number(allowed || 0);
 const rejectedCount = Number(rejected || 0);
@@ -93,7 +93,7 @@ const totalRequests = allowedCount + rejectedCount;
 
 const rejectionRate = totalRequests === 0
     ? 0
-    : (rejectedCount / totalRequests) * 100;
+    : Number(((rejectedCount / totalRequests) * 100).toFixed(2));
 
      res.json({
     allowed: allowedCount,
