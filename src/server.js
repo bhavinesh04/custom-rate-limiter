@@ -1,4 +1,4 @@
-import dotenv from "dotenv"
+import "dotenv/config";
 import cors from "cors"
 import connectDB from "./config/db.js"
 import app from "./app.js"
@@ -6,7 +6,8 @@ import "./config/redis.js"
 import metricsRouter from "./routes/metrics.js";
 
 
-dotenv.config()
+
+// dotenv.config()
 connectDB()
 
 app.use(cors())

@@ -1,10 +1,10 @@
-import createRateLimiter from "./rateLimiter.js"
+import createRateLimiter from "./rateLimiter.js";
+import { rateLimitConfig } from "../config/rateLimits.js";
 
-const loginLimiter = createRateLimiter({ maxTokens: 3, refillRate: 1 })
-const apiLimiter = createRateLimiter({ maxTokens: 20, refillRate: 0.5 })
+const loginLimiter = createRateLimiter(rateLimitConfig.login)
+const apiLimiter = createRateLimiter(rateLimitConfig.api)
 const apiKeyLimiter = createRateLimiter({
-    maxTokens: 3,
-    refillRate: 1,
+    ...rateLimitConfig.apiKey,
     identityErrorMessage: "API key is required",
     identityType: "apiKey",
     keyGenerator: (req) => {
@@ -20,8 +20,7 @@ const apiKeyLimiter = createRateLimiter({
 });
 
 const userLimiter = createRateLimiter({
-    maxTokens: 3,
-    refillRate: 0.1,
+    ...rateLimitConfig.user,
      identityErrorMessage: "User ID is required",
      identityType: "user",
     keyGenerator: (req) => {
@@ -37,8 +36,7 @@ const userLimiter = createRateLimiter({
 });
 
 const userLoginLimiter = createRateLimiter({
-    maxTokens: 3,
-    refillRate: 0.1,
+    ...rateLimitConfig.userLogin,
     identityErrorMessage: "User ID is required",
     identityType: "user",
     

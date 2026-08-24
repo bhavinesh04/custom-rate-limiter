@@ -13,6 +13,12 @@ export default function createRateLimiter({ maxTokens,
     identityErrorMessage = "Client identity is required",
   identityType = "ip"}) {
 
+    if (maxTokens <= 0 || refillRate <= 0) {
+    throw new Error(
+        "maxTokens and refillRate must be greater than 0"
+    );
+}
+
     return async function rateLimiter(req, res, next) {
         const identity = keyGenerator(req);
         const bucketIdentity = bucketKeyGenerator(identity);
