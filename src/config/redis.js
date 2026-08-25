@@ -7,6 +7,7 @@ if (!process.env.REDIS_URL) {
 const redisClient = createClient({
   url: process.env.REDIS_URL,
   socket: {
+    tls: true,
     reconnectStrategy: (retries) => {
       return Math.min(retries * 100, 1000);
     }
