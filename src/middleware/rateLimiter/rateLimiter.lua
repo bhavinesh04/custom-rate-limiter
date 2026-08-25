@@ -24,9 +24,11 @@ lastRefillTime = currentTime
 if tokens >= 1 then
     tokens = tokens - 1
 
-    redis.call("INCR", KEYS[2])
+redis.call("INCR", KEYS[2])
 redis.call("INCR", KEYS[3])
 redis.call("INCR", KEYS[4])
+
+redis.call("EXPIRE", KEYS[4], 600)
 
     redis.call(
         "HSET",
@@ -54,6 +56,8 @@ redis.call("EXPIRE", KEYS[1], 600)
 redis.call("INCR", KEYS[5])
 redis.call("INCR", KEYS[6])
 redis.call("INCR", KEYS[7])
+
+redis.call("EXPIRE", KEYS[7], 600)
 
 local retryAfter = math.ceil((1 - tokens) / refillRate)
 local resetTime = math.floor(currentTime / 1000) + retryAfter
