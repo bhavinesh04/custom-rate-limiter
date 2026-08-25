@@ -5,9 +5,9 @@ services:
     ports:
       - "6379:6379"
 
-  backend:
+  backend1:
     build: .
-    container_name: rate-limiter-backend
+    container_name: rate-limiter-backend-1
     ports:
       - "3000:3000"
     environment:
@@ -15,3 +15,25 @@ services:
       REDIS_URL: redis://redis:6379
     depends_on:
       - redis
+
+  backend2:
+    build: .
+    container_name: rate-limiter-backend-2
+    ports:
+      - "3001:3000"
+    environment:
+      PORT: 3000
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - redis
+
+  nginx:
+    image: nginx:alpine
+    container_name: rate-limiter-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend1
+      - backend2
