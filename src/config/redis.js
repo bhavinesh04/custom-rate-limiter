@@ -8,8 +8,9 @@ const redisClient = createClient({
   url: process.env.REDIS_URL,
   socket: {
     tls: true,
+    connectTimeout: 10000,
     reconnectStrategy: (retries) => {
-      return Math.min(retries * 100, 1000);
+      return Math.min(retries * 100, 3000);
     }
   }
 });
