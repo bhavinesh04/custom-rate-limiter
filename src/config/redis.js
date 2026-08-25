@@ -1,28 +1,36 @@
-import { createClient } from "redis"
+import { createClient } from "redis";
 
 if (!process.env.REDIS_URL) {
   throw new Error("REDIS_URL is not defined");
 }
 
 const redisClient = createClient({
-    url: process.env.REDIS_URL,
-    socket: {
-        reconnectStrategy: (retries) => {
-    if (retries > 5) {
-        return false;
+  url: process.env.REDIS_URL,
+  socket: {
+    reconnectStrategy: (retries) => {
+      return Math.min(retries * 100, 1000);
     }
-
-    return Math.min(retries * 100, 1000);
-}
-    }
+  }
 });
 
 redisClient.on("error", (err) => {
-  console.error("Redis Error:", err)
-})
+  console.error("Redis Error:", err);
+});
 
-await redisClient.connect()
+redisClient.on("connect", () => {
+  console.log("Redis connecting...");
+});
 
-console.log("✅ Redis connected")
+redisClient.on("ready", () => {
+  console.log("Redis ready");
+});
 
-export default redisClient
+redisClient.on("reconnecting", () => {
+  console.log("Redis reconnecting...");
+});
+
+await redisClient.connect();
+
+console.log("✅ Redis connected");
+
+export default redisClient;

@@ -31,6 +31,12 @@ if (!identity) {
 
 const key = `rate_limit:${bucketIdentity}`;
 
+if (!redisClient.isReady) {
+    return res.status(503).json({
+        message: "Rate limiter temporarily unavailable"
+    });
+}
+
         try {
             const result = await redisClient.eval(luaScript, {
                 keys: [

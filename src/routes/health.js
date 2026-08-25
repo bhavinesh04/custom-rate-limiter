@@ -5,6 +5,13 @@ const router = express.Router();
 
 router.get("/", async (req, res) => {
     try {
+        if (!redisClient.isReady) {
+            return res.status(503).json({
+                status: "error",
+                redis: "disconnected"
+            });
+        }
+
         await redisClient.ping();
 
         res.json({
