@@ -4,28 +4,21 @@ import redisClient from "../config/redis.js";
 const router = express.Router();
 
 router.get("/", async (req, res) => {
-    try {
-        if (!redisClient.isReady) {
-            return res.status(503).json({
-                status: "error",
-                redis: "disconnected"
-            });
-        }
+  try {
+    await redisClient.ping();
 
-        await redisClient.ping();
+    res.json({
+      status: "ok",
+      redis: "connected"
+    });
+  } catch (error) {
+    console.error("Health check error:", error);
 
-        res.json({
-            status: "ok",
-            redis: "connected"
-        });
-    } catch (error) {
-        console.error("Health check error:", error);
-
-        res.status(503).json({
-            status: "error",
-            redis: "disconnected"
-        });
-    }
+    res.status(503).json({
+      status: "error",
+      redis: "disconnected"
+    });
+  }
 });
 
 export default router;
