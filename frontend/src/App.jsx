@@ -27,7 +27,9 @@ function App() {
       setLoading(true);
       setError("");
 
-      const response = await fetch("http://localhost:3000/metrics");
+      const response = await fetch(
+  `${import.meta.env.VITE_API_URL}/metrics`
+);
 
       if (!response.ok) {
         throw new Error("Failed to fetch metrics");
@@ -46,7 +48,9 @@ function App() {
 
   const fetchHealth = useCallback(async () => {
     try {
-      const response = await fetch("http://localhost:3000/health");
+      const response = await fetch(
+  `${import.meta.env.VITE_API_URL}/health`
+);
 
       if (!response.ok) {
         throw new Error("Redis unavailable");
