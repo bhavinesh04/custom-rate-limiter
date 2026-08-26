@@ -14,6 +14,7 @@ import MetricCard from "./components/MetricCard";
 import EndpointTable from "./components/EndpointTable";
 import ClientTable from "./components/ClientTable";
 
+
 function App() {
   const [metrics, setMetrics] = useState(null);
   const [error, setError] = useState("");
@@ -214,33 +215,29 @@ function App() {
 
             <section className="tables-grid">
 
-              <div className="panel">
-                <div className="panel-header">
-                  <div className="panel-title">
-                    <BarChart3 size={19} />
-                    <h2>Endpoint Statistics</h2>
-                  </div>
-                </div>
+  <div className="panel">
+    <div className="panel-header">
+      <div className="panel-title">
+        <BarChart3 size={19} />
+        <h2>Endpoint Statistics</h2>
+      </div>
+    </div>
 
-                <div className="table-scroll">
-                  <EndpointTable endpoints={metrics.endpoints} />
-                </div>
-              </div>
+    <EndpointTable endpoints={metrics.endpoints} />
+  </div>
 
-              <div className="panel">
-                <div className="panel-header">
-                  <div className="panel-title">
-                    <Users size={19} />
-                    <h2>Client Statistics</h2>
-                  </div>
-                </div>
+  <div className="panel">
+    <div className="panel-header">
+      <div className="panel-title">
+        <Users size={19} />
+        <h2>Client Statistics</h2>
+      </div>
+    </div>
 
-                <div className="table-scroll">
-                  <ClientTable clients={metrics.clients} />
-                </div>
-              </div>
+    <ClientTable clients={metrics.clients} />
+  </div>
 
-            </section>
+</section>
 
             {lastUpdated && (
               <p className="last-updated">
