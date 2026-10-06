@@ -9,10 +9,6 @@ The system uses the **Token Bucket algorithm** to control API request rates and 
 - 🌐 **Frontend Dashboard:** [Open Live Demo](https://custom-rate-limiter-dashboard.onrender.com)
 - ⚙️ **Backend API:** [View Backend API](https://custom-rate-limiter-1.onrender.com)
 
- ## Dashboard Preview
-
-![Custom Rate Limiter Dashboard](./frontend/public/dashboard.png)
-
 
 ## Features
 
