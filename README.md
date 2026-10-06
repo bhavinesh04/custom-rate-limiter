@@ -4,6 +4,12 @@ A distributed API rate limiter built with Node.js, Express, Redis, Lua, Docker, 
 
 The system uses the **Token Bucket algorithm** to control API request rates and Redis to maintain shared rate-limit state across multiple backend instances.
 
+## 🚀 Live Demo
+
+- 🌐 **Frontend Dashboard:** [Open Live Demo](https://custom-rate-limiter-dashboard.onrender.com)
+- ⚙️ **Backend API:** [View Backend API](https://custom-rate-limiter-1.onrender.com)
+
+
 ## Features
 
 - Token Bucket rate-limiting algorithm
