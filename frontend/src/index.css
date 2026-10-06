@@ -371,22 +371,18 @@ button {
   gap: 20px;
 }
 
-.panel {
+.statistics-section {
   background: white;
-
   border: 1px solid #e2e8f0;
-
   border-radius: 12px;
-
   padding: 22px;
-
   box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
-
-  min-width: 0;
+  overflow-x: auto;
 }
 
-.panel-header {
-  margin-bottom: 16px;
+.statistics-section h2 {
+  margin: 0 0 20px;
+  font-size: 18px;
 }
 
 .panel-title {
@@ -645,4 +641,134 @@ td:nth-child(3) {
   .about-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* =========================
+   Rate Limiter Testing
+========================= */
+
+.test-panel {
+  background: white;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 12px;
+
+  padding: 22px;
+
+  margin-bottom: 20px;
+
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
+}
+
+.test-panel .panel-header {
+  margin-bottom: 18px;
+}
+
+.test-description {
+  margin: 7px 0 0 28px;
+
+  color: #64748b;
+
+  font-size: 13px;
+}
+
+.test-actions {
+  display: flex;
+
+  gap: 10px;
+
+  flex-wrap: wrap;
+}
+
+.test-button {
+  border: 1px solid #2563eb;
+
+  background: #2563eb;
+
+  color: white;
+
+  padding: 10px 16px;
+
+  border-radius: 8px;
+
+  cursor: pointer;
+
+  font-weight: 600;
+
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.test-button:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.test-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.test-button:disabled {
+  opacity: 0.6;
+
+  cursor: not-allowed;
+}
+
+.test-results {
+  margin-top: 18px;
+
+  padding-top: 16px;
+
+  border-top: 1px solid #e2e8f0;
+}
+
+.test-summary {
+  display: flex;
+
+  gap: 22px;
+
+  flex-wrap: wrap;
+
+  color: #475569;
+
+  font-size: 14px;
+}
+
+.allowed-result {
+  color: #16a34a;
+}
+
+.rejected-result {
+  color: #dc2626;
+}
+
+.request-results {
+  display: flex;
+
+  gap: 7px;
+
+  flex-wrap: wrap;
+
+  margin-top: 13px;
+}
+
+.request-status {
+  padding: 5px 9px;
+
+  border-radius: 6px;
+
+  font-size: 12px;
+
+  font-weight: 700;
+}
+
+.request-status.allowed {
+  background: #f0fdf4;
+
+  color: #16a34a;
+}
+
+.request-status.rejected {
+  background: #fef2f2;
+
+  color: #dc2626;
 }

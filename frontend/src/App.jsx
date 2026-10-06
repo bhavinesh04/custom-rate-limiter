@@ -22,31 +22,38 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [redisStatus, setRedisStatus] = useState("checking");
   const [activePage, setActivePage] = useState("dashboard");
+  const [testResults, setTestResults] = useState([]);
+const [testLoading, setTestLoading] = useState(false);
 
-  const fetchMetrics = useCallback(async () => {
-    try {
-      setLoading(true);
+  const fetchMetrics = useCallback(async (showError = true) => {
+  try {
+    setLoading(true);
+
+    if (showError) {
       setError("");
-
-      const response = await fetch(
-  `${import.meta.env.VITE_API_URL}/metrics`
-);
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch metrics");
-      }
-
-      const data = await response.json();
-
-      setMetrics(data);
-      setLastUpdated(new Date());
-    } catch (error) {
-      setError("Unable to connect to backend");
-    } finally {
-      setLoading(false);
     }
-  }, []);
 
+    const response = await fetch(
+      `${import.meta.env.VITE_API_URL}/metrics`
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch metrics");
+    }
+
+    const data = await response.json();
+
+    setMetrics(data);
+    setLastUpdated(new Date());
+
+  } catch (error) {
+    if (showError) {
+      setError("Unable to connect to backend");
+    }
+  } finally {
+    setLoading(false);
+  }
+}, []);
   const fetchHealth = useCallback(async () => {
     try {
       const response = await fetch(
@@ -64,6 +71,41 @@ function App() {
       setRedisStatus("disconnected");
     }
   }, []);
+
+  const sendTestRequests = async (count) => {
+  setTestLoading(true);
+  setTestResults([]);
+  setError("");
+
+  try {
+    const userId = `demo-recruiter-${Date.now()}`;
+
+    const requests = Array.from({ length: count }, () =>
+      fetch(`${import.meta.env.VITE_API_URL}/api/user-test-1`, {
+        method: "GET",
+        headers: {
+          "x-user-id": userId
+        }
+      })
+    );
+
+    const responses = await Promise.all(requests);
+
+    const statuses = responses.map((response) => response.status);
+
+    setTestResults(statuses);
+
+    // Refresh dashboard metrics
+    fetchMetrics(false);
+
+  } catch (error) {
+    console.error("Test request error:", error);
+    setError("Unable to send test requests");
+  } finally {
+    setTestLoading(false);
+  }
+};
+  
 
   useEffect(() => {
     fetchMetrics();
@@ -212,6 +254,91 @@ function App() {
               />
 
             </section>
+
+            <section className="test-panel">
+
+  <div className="panel-header">
+
+    <div className="panel-title">
+      <ShieldX size={19} />
+      <h2>Test Rate Limiter</h2>
+    </div>
+
+    <p className="test-description">
+      Send requests to the protected API and observe the rate limiter in real time.
+    </p>
+
+  </div>
+
+  <div className="test-actions">
+
+    {[1, 5, 10].map((count) => (
+
+      <button
+        key={count}
+        className="test-button"
+        onClick={() => sendTestRequests(count)}
+        disabled={testLoading}
+      >
+        {testLoading
+          ? "Testing..."
+          : `Send ${count} Request${count > 1 ? "s" : ""}`}
+      </button>
+
+    ))}
+
+  </div>
+
+  {testResults.length > 0 && (
+
+    <div className="test-results">
+
+      <div className="test-summary">
+
+        <span>
+          Sent: <strong>{testResults.length}</strong>
+        </span>
+
+        <span className="allowed-result">
+          Allowed:{" "}
+          <strong>
+            {testResults.filter((status) => status === 200).length}
+          </strong>
+        </span>
+
+        <span className="rejected-result">
+          Rejected:{" "}
+          <strong>
+            {testResults.filter((status) => status === 429).length}
+          </strong>
+        </span>
+
+      </div>
+
+      <div className="request-results">
+
+        {testResults.map((status, index) => (
+
+          <span
+            key={index}
+            className={
+              status === 200
+                ? "request-status allowed"
+                : "request-status rejected"
+            }
+          >
+            {status}
+          </span>
+
+        ))}
+
+      </div>
+
+    </div>
+
+  )}
+
+</section>
 
             <section className="tables-grid">
 
